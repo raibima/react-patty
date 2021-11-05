@@ -1,0 +1,19 @@
+{
+  "name": "react-patty",
+  "version": "0.0.1",
+  "description": "React state management patterns as a library.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raibima/react-patty.git"
+  },
+  "author": "Raibima Putra <rayp1100@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/raibima/react-patty/issues"
+  },
+  "homepage": "https://github.com/raibima/react-patty#readme"
+}

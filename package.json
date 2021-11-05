@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/raibima/react-patty#readme",
   "devDependencies": {
+    "@types/react": "^17.0.34",
+    "react": "^17.0.2",
     "typescript": "^4.4.4"
   }
 }

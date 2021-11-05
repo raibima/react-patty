@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/raibima/react-patty/issues"
   },
-  "homepage": "https://github.com/raibima/react-patty#readme"
+  "homepage": "https://github.com/raibima/react-patty#readme",
+  "devDependencies": {
+    "typescript": "^4.4.4"
+  }
 }

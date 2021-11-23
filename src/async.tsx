@@ -1,7 +1,15 @@
 import * as React from 'react';
-import {State, Provider} from './types';
-
-const {createContext, useContext, useEffect, useReducer, useState} = React;
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useState,
+  Context,
+  Reducer,
+  Dispatch,
+} from 'react';
+import type {State, Provider} from './types';
 
 type SetAction<T> = {
   type: 'set';
@@ -10,17 +18,17 @@ type SetAction<T> = {
 
 interface AsyncState<S, A> extends State<S, A> {
   __internal: State<S, A>['__internal'] & {
-    loadStatusContext: React.Context<Status>;
+    loadStatusContext: Context<Status>;
   };
 }
 
 export function createAsyncState<S, A>(
   initialValue: S,
   resolver: () => Promise<S>,
-  reducer: React.Reducer<S, A>
+  reducer: Reducer<S, A>
 ): AsyncState<S, A> {
   const valueContext = createContext(initialValue);
-  const dispatchContext = createContext<React.Dispatch<A>>(() => {
+  const dispatchContext = createContext<Dispatch<A>>(() => {
     // noop default
     // TODO: warn in DEV
   });

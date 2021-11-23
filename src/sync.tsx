@@ -1,14 +1,13 @@
 import * as React from 'react';
-import {State, Provider} from './types';
-
-const {createContext, useReducer} = React;
+import {createContext, useReducer, Reducer, Dispatch} from 'react';
+import type {State, Provider} from './types';
 
 export function createState<S, A>(
   initialValue: S,
-  reducer: React.Reducer<S, A>
+  reducer: Reducer<S, A>
 ): State<S, A> {
   const valueContext = createContext(initialValue);
-  const dispatchContext = createContext<React.Dispatch<A>>(() => {
+  const dispatchContext = createContext<Dispatch<A>>(() => {
     // noop default
     // TODO: warn in DEV
   });

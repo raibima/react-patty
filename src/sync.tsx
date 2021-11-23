@@ -1,9 +1,6 @@
 import {createContext, Dispatch, Reducer, useReducer} from 'react';
 import {State, Provider} from './types';
 
-// @ts-ignore
-const DEV = process.env.NODE_ENV === 'development';
-
 export function createState<S, A>(
   initialValue: S,
   reducer: Reducer<S, A>
@@ -31,7 +28,7 @@ export function createState<S, A>(
       dispatchContext,
     },
     set displayName(name: string) {
-      if (DEV) {
+      if (__DEV__) {
         valueContext.displayName = `${name}_Value`;
         dispatchContext.displayName = `${name}_Dispatch`;
       }

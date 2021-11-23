@@ -12,3 +12,7 @@ export interface State<S, A> {
   };
   displayName: string;
 }
+
+declare global {
+  var __DEV__: boolean;
+}

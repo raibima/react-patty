@@ -10,9 +10,6 @@ import {
 } from 'react';
 import {State, Provider} from './types';
 
-// @ts-ignore
-const DEV = process.env.NODE_ENV === 'development';
-
 type SetAction<T> = {
   type: 'set';
   value: T;
@@ -81,7 +78,7 @@ export function createAsyncState<S, A>(
       loadStatusContext,
     },
     set displayName(name: string) {
-      if (DEV) {
+      if (__DEV__) {
         valueContext.displayName = `${name}_Value`;
         dispatchContext.displayName = `${name}_Dispatch`;
         loadStatusContext.displayName = `${name}_LoadStatus`;

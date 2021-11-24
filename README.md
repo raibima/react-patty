@@ -19,9 +19,9 @@ import {createState} from 'react-patty/sync';
 
 const Counter = createState(0, (prev, action) => {
   switch (action.type) {
-    case 'increment':
+    case 'INCREMENT':
       return prev + 1;
-    case 'decrement':
+    case 'DECREMENT':
       return prev - 1;
     default:
       return prev;

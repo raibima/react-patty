@@ -1,5 +1,7 @@
 module.exports = {
   testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.js'],
+  testPathIgnorePatterns: ['setup.js'],
   transform: {
     '^.+\\.(t|j)sx?$': [
       '@swc/jest',

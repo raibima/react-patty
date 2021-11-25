@@ -48,10 +48,10 @@ function identity<T>(value: T): T {
   return value;
 }
 
-export function createAsyncState<S, A, F extends FetcherBase>(
+export function createAsyncState<S, A, T, F extends FetcherBase>(
   initialValue: S,
-  resolver: (fetcher?: F) => Promise<S>,
-  reducer: Reducer<S, A | ResolveEvent<S> | ErrorEvent>,
+  resolver: (fetcher?: F) => Promise<T>,
+  reducer: Reducer<S, A | ResolveEvent<T> | ErrorEvent>,
   lazyInit: (initialValue: S) => S = identity
 ): AsyncState<S, A, F> {
   const valueContext = createContext(initialValue);

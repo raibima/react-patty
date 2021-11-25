@@ -30,7 +30,7 @@ interface AsyncState<S, A, F extends FetcherBase> {
     };
     displayName: string;
 }
-export declare function createAsyncState<S, A, F extends FetcherBase>(initialValue: S, resolver: (fetcher?: F) => Promise<S>, reducer: Reducer<S, A | ResolveEvent<S> | ErrorEvent>, lazyInit?: (initialValue: S) => S): AsyncState<S, A, F>;
+export declare function createAsyncState<S, A, T, F extends FetcherBase>(initialValue: S, resolver: (fetcher?: F) => Promise<T>, reducer: Reducer<S, A | ResolveEvent<T> | ErrorEvent>, lazyInit?: (initialValue: S) => S): AsyncState<S, A, F>;
 declare type Status = 'loading' | 'resolved' | 'rejected';
 export declare function useLoadStatus<S, A, F extends FetcherBase>(state: AsyncState<S, A, F>): Status;
 interface Callback {

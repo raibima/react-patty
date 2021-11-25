@@ -9,9 +9,9 @@ const r = (e) => new Promise((t) => setTimeout(t, e));
     l = e.createContext(() => {}),
     s = e.createContext("loading"),
     i = {
-      Provider: ({ children: t }) => {
-        const [d, f] = e.useReducer(o, n, c),
-          [v, p] = e.useState("loading");
+      Provider: ({ children: t, fetcher: d }) => {
+        const [f, v] = e.useReducer(o, n, c),
+          [p, x] = e.useState("loading");
         return (
           e.useEffect(() => {
             let e = !1;
@@ -32,16 +32,16 @@ const r = (e) => new Promise((t) => setTimeout(t, e));
                     }
                   throw o;
                 };
-              })(a)()
+              })(a)(d)
                 .then((t) => {
                   e ||
-                    (f({ type: "$$resolve", payload: { value: t } }),
-                    p("resolved"));
+                    (v({ type: "$$resolve", payload: { value: t } }),
+                    x("resolved"));
                 })
                 .catch((t) => {
                   if (e) return;
                   const r = t;
-                  f({ type: "$$error", payload: { error: r } }), p("rejected");
+                  v({ type: "$$error", payload: { error: r } }), x("rejected");
                   const n = i.__internal.callback;
                   "object" == typeof n &&
                     "function" == typeof n.onLoadError &&
@@ -51,14 +51,14 @@ const r = (e) => new Promise((t) => setTimeout(t, e));
                 e = !0;
               }
             );
-          }, []),
+          }, [d]),
           e.createElement(
             u.Provider,
-            { value: d },
+            { value: f },
             e.createElement(
               l.Provider,
-              { value: f },
-              e.createElement(s.Provider, { value: v }, t)
+              { value: v },
+              e.createElement(s.Provider, { value: p }, t)
             )
           )
         );

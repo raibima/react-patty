@@ -168,3 +168,32 @@ test('Lazy init', () => {
   );
   expect(screen.getByText('1')).toBeInstanceOf(HTMLElement);
 });
+
+test('Fetcher injection', async () => {
+  let resolve;
+  const Dummy = createAsyncState(
+    0,
+    (fetcher) => fetcher(123),
+    (_, a) => a.payload.value
+  );
+  function DummyApp() {
+    const value = useValue(Dummy);
+    return <div>{value}</div>;
+  }
+  render(
+    <Dummy.Provider
+      fetcher={(val) =>
+        new Promise((_resolve) => {
+          resolve = () => _resolve(val);
+        })
+      }
+    >
+      <DummyApp />
+    </Dummy.Provider>
+  );
+  expect(screen.getByText('0')).toBeInstanceOf(HTMLElement);
+  await act(async () => {
+    resolve();
+  });
+  expect(screen.getByText('123')).toBeInstanceOf(HTMLElement);
+});

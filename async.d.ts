@@ -1,5 +1,4 @@
-import { Context, Reducer } from 'react';
-import type { State } from './types';
+import { Context, Reducer, Dispatch, ReactNode } from 'react';
 interface ResolveEvent<T> {
     type: '$$resolve';
     payload: {
@@ -12,17 +11,30 @@ interface ErrorEvent {
         error: Error;
     };
 }
-interface AsyncState<S, A> extends State<S, A> {
-    __internal: State<S, A>['__internal'] & {
+interface FetcherBase {
+    (...args: any[]): Promise<any>;
+}
+export interface AsyncProvider<F extends FetcherBase> {
+    (props: {
+        children: ReactNode;
+        fetcher?: F;
+    }): JSX.Element | JSX.Element[];
+}
+interface AsyncState<S, A, F extends FetcherBase> {
+    Provider: AsyncProvider<F>;
+    __internal: {
+        valueContext: Context<S>;
+        dispatchContext: Context<Dispatch<A>>;
         loadStatusContext: Context<Status>;
         callback?: Callback;
     };
+    displayName: string;
 }
-export declare function createAsyncState<S, A>(initialValue: S, resolver: () => Promise<S>, reducer: Reducer<S, A | ResolveEvent<S> | ErrorEvent>, lazyInit?: (initialValue: S) => S): AsyncState<S, A>;
+export declare function createAsyncState<S, A, F extends FetcherBase>(initialValue: S, resolver: (fetcher?: F) => Promise<S>, reducer: Reducer<S, A | ResolveEvent<S> | ErrorEvent>, lazyInit?: (initialValue: S) => S): AsyncState<S, A, F>;
 declare type Status = 'loading' | 'resolved' | 'rejected';
-export declare function useLoadStatus<S, A>(state: AsyncState<S, A>): Status;
+export declare function useLoadStatus<S, A, F extends FetcherBase>(state: AsyncState<S, A, F>): Status;
 interface Callback {
     onLoadError?: (err: Error) => void;
 }
-export declare function unstable_addListener<S, A>(state: AsyncState<S, A>, callback: Callback): void;
+export declare function unstable_addListener<S, A, F extends FetcherBase>(state: AsyncState<S, A, F>, callback: Callback): void;
 export {};

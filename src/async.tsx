@@ -8,8 +8,8 @@ import {
   Context,
   Reducer,
   Dispatch,
+  ReactNode,
 } from 'react';
-import type {State, Provider} from './types';
 
 interface ResolveEvent<T> {
   type: '$$resolve';
@@ -25,36 +25,48 @@ interface ErrorEvent {
   };
 }
 
-interface AsyncState<S, A> extends State<S, A> {
-  __internal: State<S, A>['__internal'] & {
+interface FetcherBase {
+  (...args: any[]): Promise<any>;
+}
+
+export interface AsyncProvider<F extends FetcherBase> {
+  (props: {children: ReactNode; fetcher?: F}): JSX.Element | JSX.Element[];
+}
+
+interface AsyncState<S, A, F extends FetcherBase> {
+  Provider: AsyncProvider<F>;
+  __internal: {
+    valueContext: Context<S>;
+    dispatchContext: Context<Dispatch<A>>;
     loadStatusContext: Context<Status>;
     callback?: Callback;
   };
+  displayName: string;
 }
 
 function identity<T>(value: T): T {
   return value;
 }
 
-export function createAsyncState<S, A>(
+export function createAsyncState<S, A, F extends FetcherBase>(
   initialValue: S,
-  resolver: () => Promise<S>,
+  resolver: (fetcher?: F) => Promise<S>,
   reducer: Reducer<S, A | ResolveEvent<S> | ErrorEvent>,
   lazyInit: (initialValue: S) => S = identity
-): AsyncState<S, A> {
+): AsyncState<S, A, F> {
   const valueContext = createContext(initialValue);
   const dispatchContext = createContext<Dispatch<A>>(() => {
     // noop default
     // TODO: warn in DEV
   });
   const loadStatusContext = createContext<Status>('loading');
-  const _Provider: Provider = ({children}) => {
+  const _Provider: AsyncProvider<F> = ({children, fetcher}) => {
     const [state, dispatch] = useReducer(reducer, initialValue, lazyInit);
     const [loadStatus, setLoadStatus] = useState<Status>('loading');
     useEffect(() => {
       let cancel = false;
       let resolverWithRetry = withRetry(resolver);
-      resolverWithRetry()
+      resolverWithRetry(fetcher)
         .then((value) => {
           if (cancel) {
             return;
@@ -81,7 +93,7 @@ export function createAsyncState<S, A>(
       return () => {
         cancel = true;
       };
-    }, []);
+    }, [fetcher]);
     return (
       <valueContext.Provider value={state}>
         <dispatchContext.Provider value={dispatch}>
@@ -93,7 +105,7 @@ export function createAsyncState<S, A>(
     );
   };
 
-  const State: AsyncState<S, A> = {
+  const State: AsyncState<S, A, F> = {
     Provider: _Provider,
     __internal: {
       valueContext,
@@ -114,7 +126,9 @@ export function createAsyncState<S, A>(
 
 type Status = 'loading' | 'resolved' | 'rejected';
 
-export function useLoadStatus<S, A>(state: AsyncState<S, A>): Status {
+export function useLoadStatus<S, A, F extends FetcherBase>(
+  state: AsyncState<S, A, F>
+): Status {
   return useContext(state.__internal.loadStatusContext);
 }
 
@@ -153,8 +167,8 @@ interface Callback {
   onLoadError?: (err: Error) => void;
 }
 
-export function unstable_addListener<S, A>(
-  state: AsyncState<S, A>,
+export function unstable_addListener<S, A, F extends FetcherBase>(
+  state: AsyncState<S, A, F>,
   callback: Callback
 ) {
   if (__DEV__) {

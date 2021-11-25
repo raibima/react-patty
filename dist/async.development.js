@@ -12,13 +12,13 @@ function createAsyncState(initialValue, resolver, reducer, lazyInit = identity) 
     // TODO: warn in DEV
     });
     const loadStatusContext = /*#__PURE__*/ React.createContext('loading');
-    const _Provider = ({ children  })=>{
+    const _Provider = ({ children , fetcher  })=>{
         const [state, dispatch] = React.useReducer(reducer, initialValue, lazyInit);
         const [loadStatus, setLoadStatus] = React.useState('loading');
         React.useEffect(()=>{
             let cancel = false;
             let resolverWithRetry = withRetry(resolver);
-            resolverWithRetry().then((value)=>{
+            resolverWithRetry(fetcher).then((value)=>{
                 if (cancel) {
                     return;
                 }
@@ -49,7 +49,9 @@ function createAsyncState(initialValue, resolver, reducer, lazyInit = identity) 
             return ()=>{
                 cancel = true;
             };
-        }, []);
+        }, [
+            fetcher
+        ]);
         return(/*#__PURE__*/ React.createElement(valueContext.Provider, {
             value: state
         }, /*#__PURE__*/ React.createElement(dispatchContext.Provider, {

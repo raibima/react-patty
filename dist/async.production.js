@@ -1,23 +1,22 @@
 "use strict";
 var e = require("react");
-const t = (e) => new Promise((t) => setTimeout(t, e));
-(exports.createAsyncState = function (r, n, a) {
-  const o = e.createContext(r),
-    c = e.createContext(() => {}),
-    u = e.createContext("loading"),
-    l = (e, t) => {
-      const r = t;
-      return "$$resolve" === r.type ? r.value : a(e, r);
-    },
-    s = {
-      Provider: ({ children: a }) => {
-        const [i, d] = e.useReducer(l, r),
-          [v, f] = e.useState("loading");
+function t(e) {
+  return e;
+}
+const r = (e) => new Promise((t) => setTimeout(t, e));
+(exports.createAsyncState = function (n, a, o, c = t) {
+  const u = e.createContext(n),
+    l = e.createContext(() => {}),
+    s = e.createContext("loading"),
+    i = {
+      Provider: ({ children: t }) => {
+        const [d, f] = e.useReducer(o, n, c),
+          [v, p] = e.useState("loading");
         return (
           e.useEffect(() => {
             let e = !1;
             return (
-              (function (e, r = 5) {
+              (function (e, t = 5) {
                 return async (...n) => {
                   let a = 0,
                     o = null;
@@ -25,23 +24,25 @@ const t = (e) => new Promise((t) => setTimeout(t, e));
                     try {
                       return await e(...n);
                     } catch (e) {
-                      if (a >= r) {
+                      if (a >= t) {
                         o = e;
                         break;
                       }
-                      await t(1e3 << a++);
+                      await r(1e3 << a++);
                     }
                   throw o;
                 };
-              })(n)()
+              })(a)()
                 .then((t) => {
-                  e || (d({ type: "$$resolve", value: t }), f("resolved"));
+                  e ||
+                    (f({ type: "$$resolve", payload: { value: t } }),
+                    p("resolved"));
                 })
                 .catch((t) => {
                   if (e) return;
                   const r = t;
-                  d({ type: "$$error", value: r }), f("rejected");
-                  const n = s.__internal.callback;
+                  f({ type: "$$error", payload: { error: r } }), p("rejected");
+                  const n = i.__internal.callback;
                   "object" == typeof n &&
                     "function" == typeof n.onLoadError &&
                     n.onLoadError(r);
@@ -52,20 +53,20 @@ const t = (e) => new Promise((t) => setTimeout(t, e));
             );
           }, []),
           e.createElement(
-            o.Provider,
-            { value: i },
+            u.Provider,
+            { value: d },
             e.createElement(
-              c.Provider,
-              { value: d },
-              e.createElement(u.Provider, { value: v }, a)
+              l.Provider,
+              { value: f },
+              e.createElement(s.Provider, { value: v }, t)
             )
           )
         );
       },
-      __internal: { valueContext: o, dispatchContext: c, loadStatusContext: u },
+      __internal: { valueContext: u, dispatchContext: l, loadStatusContext: s },
       set displayName(e) {},
     };
-  return s;
+  return i;
 }),
   (exports.unstable_addListener = function (e, t) {
     e.__internal.callback = t;

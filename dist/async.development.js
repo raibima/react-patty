@@ -2,24 +2,18 @@
 
 var React = require('react');
 
-function createAsyncState(initialValue, resolver, reducer) {
+function identity(value) {
+    return value;
+}
+function createAsyncState(initialValue, resolver, reducer, lazyInit = identity) {
     const valueContext = /*#__PURE__*/ React.createContext(initialValue);
     const dispatchContext = /*#__PURE__*/ React.createContext(()=>{
     // noop default
     // TODO: warn in DEV
     });
     const loadStatusContext = /*#__PURE__*/ React.createContext('loading');
-    const _reducer = (prev, event)=>{
-        const e = event;
-        switch(e.type){
-            case '$$resolve':
-                return e.value;
-            default:
-                return reducer(prev, e);
-        }
-    };
     const _Provider = ({ children  })=>{
-        const [state, dispatch] = React.useReducer(_reducer, initialValue);
+        const [state, dispatch] = React.useReducer(reducer, initialValue, lazyInit);
         const [loadStatus, setLoadStatus] = React.useState('loading');
         React.useEffect(()=>{
             let cancel = false;
@@ -30,7 +24,9 @@ function createAsyncState(initialValue, resolver, reducer) {
                 }
                 dispatch({
                     type: '$$resolve',
-                    value
+                    payload: {
+                        value
+                    }
                 });
                 setLoadStatus('resolved');
             }).catch((err)=>{
@@ -40,7 +36,9 @@ function createAsyncState(initialValue, resolver, reducer) {
                 const error = err;
                 dispatch({
                     type: '$$error',
-                    value: error
+                    payload: {
+                        error
+                    }
                 });
                 setLoadStatus('rejected');
                 const callback = State.__internal.callback;

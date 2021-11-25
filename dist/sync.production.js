@@ -1,18 +1,21 @@
 "use strict";
 var e = require("react");
-exports.createState = function (t, r) {
-  const a = e.createContext(t),
-    n = e.createContext(() => {});
+function t(e) {
+  return e;
+}
+exports.createState = function (r, n, a = t) {
+  const c = e.createContext(r),
+    o = e.createContext(() => {});
   return {
-    Provider: ({ children: c }) => {
-      const [o, i] = e.useReducer(r, t);
+    Provider: ({ children: t }) => {
+      const [u, i] = e.useReducer(n, r, a);
       return e.createElement(
-        a.Provider,
-        { value: o },
-        e.createElement(n.Provider, { value: i }, c)
+        c.Provider,
+        { value: u },
+        e.createElement(o.Provider, { value: i }, t)
       );
     },
-    __internal: { valueContext: a, dispatchContext: n },
+    __internal: { valueContext: c, dispatchContext: o },
     set displayName(e) {},
   };
 };

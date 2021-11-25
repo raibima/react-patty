@@ -8,7 +8,7 @@
     "test": "jest",
     "gen:types": "rm -rf ./*.d.ts && tsc --emitDeclarationOnly --outDir .",
     "typecheck": "tsc --noEmit",
-    "publish": "pnpm typecheck && pnpm build && pnpm gen:types && pnpm test && np --no-cleanup"
+    "publish:npm": "pnpm typecheck && pnpm build && pnpm gen:types && pnpm test && np --no-cleanup"
   },
   "files": [
     "index.js",

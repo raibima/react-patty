@@ -9,14 +9,13 @@ function createAsyncState(initialValue, resolver, reducer) {
     // TODO: warn in DEV
     });
     const loadStatusContext = /*#__PURE__*/ React.createContext('loading');
-    const _reducer = (prev, action)=>{
-        const a = action;
-        switch(a.type){
-            case 'set':
-                return a.value;
+    const _reducer = (prev, event)=>{
+        const e = event;
+        switch(e.type){
+            case '$$resolve':
+                return e.value;
             default:
-                const b = action;
-                return reducer(prev, b);
+                return reducer(prev, e);
         }
     };
     const _Provider = ({ children  })=>{
@@ -24,15 +23,30 @@ function createAsyncState(initialValue, resolver, reducer) {
         const [loadStatus, setLoadStatus] = React.useState('loading');
         React.useEffect(()=>{
             let cancel = false;
-            resolver().then((value)=>{
+            let resolverWithRetry = withRetry(resolver);
+            resolverWithRetry().then((value)=>{
                 if (cancel) {
                     return;
                 }
                 dispatch({
-                    type: 'set',
+                    type: '$$resolve',
                     value
                 });
                 setLoadStatus('resolved');
+            }).catch((err)=>{
+                if (cancel) {
+                    return;
+                }
+                const error = err;
+                dispatch({
+                    type: '$$error',
+                    value: error
+                });
+                setLoadStatus('rejected');
+                const callback = State.__internal.callback;
+                if (typeof callback === 'object' && typeof callback.onLoadError === 'function') {
+                    callback.onLoadError(error);
+                }
             });
             return ()=>{
                 cancel = true;
@@ -46,7 +60,7 @@ function createAsyncState(initialValue, resolver, reducer) {
             value: loadStatus
         }, children))));
     };
-    return {
+    const State = {
         Provider: _Provider,
         __internal: {
             valueContext,
@@ -61,10 +75,45 @@ function createAsyncState(initialValue, resolver, reducer) {
             }
         }
     };
+    return State;
 }
 function useLoadStatus(state) {
     return React.useContext(state.__internal.loadStatusContext);
 }
+const sleepMs = (ms)=>new Promise((resolve)=>setTimeout(resolve, ms)
+    )
+;
+function withRetry(fn, maxRetries = 5) {
+    return async (...args)=>{
+        let run = ()=>fn(...args)
+        ;
+        let retries = 0;
+        let error = null;
+        while(true){
+            try {
+                const value = await run();
+                return value;
+            } catch (err) {
+                if (retries >= maxRetries) {
+                    error = err;
+                    break;
+                }
+                await sleepMs(1000 << retries++);
+            }
+        }
+        throw error;
+    };
+}
+function unstable_addListener(state, callback) {
+    {
+        const cb = state.__internal.callback;
+        if (cb) {
+            throw new Error('unstable_addListener: Adding listener more than once is disallowed.');
+        }
+    }
+    state.__internal.callback = callback;
+}
 
 exports.createAsyncState = createAsyncState;
+exports.unstable_addListener = unstable_addListener;
 exports.useLoadStatus = useLoadStatus;

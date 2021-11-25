@@ -141,3 +141,10 @@ test('Error retries + onLoadError callback', async () => {
   expect(i).toBe(6); // first attempt + 5x retries = 6 attempts
   expect(error).toBeInstanceOf(Error); // our callback is called
 });
+
+test('Cannot attach listener more than once', () => {
+  globalThis.__DEV__ = true;
+  const {Counter} = setupCounter();
+  unstable_addListener(Counter, {});
+  expect(() => unstable_addListener(Counter, {})).toThrow();
+});

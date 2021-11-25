@@ -158,5 +158,13 @@ export function unstable_addListener<S, A>(
   state: AsyncState<S, A>,
   callback: Callback
 ) {
+  if (__DEV__) {
+    const cb = state.__internal.callback;
+    if (cb) {
+      throw new Error(
+        'unstable_addListener: Adding listener more than once is disallowed.'
+      );
+    }
+  }
   state.__internal.callback = callback;
 }

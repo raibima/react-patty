@@ -4,8 +4,21 @@
   "description": "React state management patterns as a library.",
   "main": "index.js",
   "scripts": {
-    "build": "node scripts/build.js"
+    "build": "rollup -c",
+    "test": "jest",
+    "gen:types": "rm -rf ./*.d.ts && tsc --emitDeclarationOnly --outDir .",
+    "typecheck": "tsc --noEmit"
   },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "sync.js",
+    "sync.d.ts",
+    "async.js",
+    "async.d.ts",
+    "types.d.ts",
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/raibima/react-patty.git"

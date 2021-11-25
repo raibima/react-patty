@@ -9,6 +9,8 @@ const loader = async () => {
 };
 const reducer = (state, action) => {
   switch (action.type) {
+    case '$$resolve':
+      return action.payload.value;
     case 'INCREMENT':
       return state + 1;
     case 'DECREMENT':

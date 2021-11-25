@@ -13,12 +13,16 @@ import type {State, Provider} from './types';
 
 interface ResolveEvent<T> {
   type: '$$resolve';
-  value: T;
+  payload: {
+    value: T;
+  };
 }
 
 interface ErrorEvent {
   type: '$$error';
-  value: Error;
+  payload: {
+    error: Error;
+  };
 }
 
 interface AsyncState<S, A> extends State<S, A> {
@@ -28,10 +32,15 @@ interface AsyncState<S, A> extends State<S, A> {
   };
 }
 
+function identity<T>(value: T): T {
+  return value;
+}
+
 export function createAsyncState<S, A>(
   initialValue: S,
   resolver: () => Promise<S>,
-  reducer: Reducer<S, A | ResolveEvent<S> | ErrorEvent>
+  reducer: Reducer<S, A | ResolveEvent<S> | ErrorEvent>,
+  lazyInit: (initialValue: S) => S = identity
 ): AsyncState<S, A> {
   const valueContext = createContext(initialValue);
   const dispatchContext = createContext<Dispatch<A>>(() => {
@@ -39,18 +48,8 @@ export function createAsyncState<S, A>(
     // TODO: warn in DEV
   });
   const loadStatusContext = createContext<Status>('loading');
-
-  const _reducer = (prev: S, event: A | ResolveEvent<S> | ErrorEvent): S => {
-    const e = event as ResolveEvent<S>;
-    switch (e.type) {
-      case '$$resolve':
-        return e.value;
-      default:
-        return reducer(prev, e);
-    }
-  };
   const _Provider: Provider = ({children}) => {
-    const [state, dispatch] = useReducer(_reducer, initialValue);
+    const [state, dispatch] = useReducer(reducer, initialValue, lazyInit);
     const [loadStatus, setLoadStatus] = useState<Status>('loading');
     useEffect(() => {
       let cancel = false;
@@ -60,7 +59,7 @@ export function createAsyncState<S, A>(
           if (cancel) {
             return;
           }
-          dispatch({type: '$$resolve', value});
+          dispatch({type: '$$resolve', payload: {value}});
           setLoadStatus('resolved');
         })
         .catch((err) => {
@@ -68,7 +67,7 @@ export function createAsyncState<S, A>(
             return;
           }
           const error = err as Error;
-          dispatch({type: '$$error', value: error});
+          dispatch({type: '$$error', payload: {error}});
           setLoadStatus('rejected');
 
           const callback = State.__internal.callback;

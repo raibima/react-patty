@@ -3,7 +3,7 @@ import {createAsyncState, useLoadStatus, unstable_addListener} from '../async';
 import {useValue} from '../index';
 import {render, screen, act} from '@testing-library/react';
 
-function setupCounter({alwaysReject = false} = {}) {
+function setupCounter({alwaysReject = false, init} = {}) {
   let resolve;
   const Counter = createAsyncState(
     0,
@@ -16,6 +16,8 @@ function setupCounter({alwaysReject = false} = {}) {
       }),
     (state, action) => {
       switch (action.type) {
+        case '$$resolve':
+          return action.payload.value;
         case 'INCREMENT':
           return state + 1;
         case 'DECREMENT':
@@ -23,7 +25,8 @@ function setupCounter({alwaysReject = false} = {}) {
         default:
           return state;
       }
-    }
+    },
+    init
   );
   return {
     Counter,
@@ -147,4 +150,21 @@ test('Cannot attach listener more than once', () => {
   const {Counter} = setupCounter();
   unstable_addListener(Counter, {});
   expect(() => unstable_addListener(Counter, {})).toThrow();
+});
+
+test('Lazy init', () => {
+  // the setupCounter function initializes the counter to 0.
+  // but with the following initializer, the resulting initial
+  // value should be 1 instead of 0.
+  const {Counter} = setupCounter({init: (x) => x + 1});
+  function CounterApp() {
+    const value = useValue(Counter);
+    return <div>{value}</div>;
+  }
+  render(
+    <Counter.Provider>
+      <CounterApp />
+    </Counter.Provider>
+  );
+  expect(screen.getByText('1')).toBeInstanceOf(HTMLElement);
 });

@@ -41,3 +41,23 @@ test('useValue returns the latest value + useDispatch can be used to update the 
   const el = screen.getByText('1');
   expect(el).toBeInstanceOf(HTMLElement);
 });
+
+test('Lazy init', () => {
+  // this should initializes to 1 instead of 0
+  const Dummy = createState(
+    0,
+    (x) => x, // reducer
+    (x) => x + 1 // initializer
+  );
+  function DummyApp() {
+    const value = useValue(Dummy);
+    return value;
+  }
+  render(
+    <Dummy.Provider>
+      <DummyApp />
+    </Dummy.Provider>
+  );
+  const el = screen.getByText('1');
+  expect(el).toBeInstanceOf(HTMLElement);
+});
